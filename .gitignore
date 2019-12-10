@@ -1,2 +1,2 @@
-input_images/*
-output_images/*
+input_images/*.jpg
+output_images/*.jpg
