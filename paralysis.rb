@@ -8,6 +8,8 @@ require 'pp'
 
 API_KEY = JSON.parse(File.read("#{__dir__}/token.json"))['API_KEY']
 
+puts "Running sleep paralysis..."
+
 images = Dir.entries("#{__dir__}/input_images").select {|f| !File.directory? f }
 
 images.map! {|i| File.absolute_path("input_images/#{i}") }
