@@ -10,14 +10,29 @@ API_KEY = JSON.parse(File.read("#{__dir__}/token.json"))['API_KEY']
 
 puts "Running sleep paralysis..."
 
-images = Dir.entries("#{__dir__}/input_images").select {|f| !File.directory? f }
+@input_folder = nil
+@output_folder = nil
 
-images.map! {|i| File.absolute_path("input_images/#{i}") }
-puts images
+if ARGV.length != 2
+  puts "Requires 2 arguments, please supply an input and output folder (no globbing)."
+  exit 1
+end
 
-output = Dir.open("#{__dir__}/output_images/")
+if ARGV.length == 2
+  if !Dir.exist? ARGV[0] or !Dir.exist? ARGV[1]
+    puts "The first two arguments must be directories."
+    exit 1
+  else
+    @input_folder = ARGV[0]
+    @output_folder = ARGV[1]
+  end
+end
 
-images.each do |image|
+@input_dir = Dir.open(@input_folder)
+
+@input_dir.each_child do |f|
+  image = File.absolute_path(f, @input_folder)
+
   r = RestClient::Request.execute(
       method: :post, 
       url: 'https://api.deepai.org/api/deepdream',
@@ -34,16 +49,17 @@ images.each do |image|
     json_r = JSON.parse(r.body)
   end
 
-  path = File.join __dir__, 'output_images', File.basename(image)
-  FileUtils.touch(path)
+  output_path = File.join __dir__, @output_folder, File.basename(image)
+  FileUtils.touch(output_path)
 
-  File.open(path) do |f|
+  File.open(output_path) do |f|
   end
   open(json_r['output_url']) do |result|
-    File.open(path, 'w') do |f|
+    File.open(output_path, 'w') do |f|
       f.write(result.read)
     end
   end
 end
+
 
 puts "Done!"
