@@ -10,21 +10,21 @@ API_KEY = JSON.parse(File.read("#{__dir__}/token.json"))['API_KEY']
 
 puts "Running sleep paralysis..."
 
-@input_folder = nil
-@output_folder = nil
+@input_folder = ARGV[0]
+@output_folder = ARGV[1]
 
 if ARGV.length != 2
   puts "Requires 2 arguments, please supply an input and output folder (no globbing)."
+  puts "Example: ruby paralysis.rb input output"
   exit 1
 end
 
 if ARGV.length == 2
-  if !Dir.exist? ARGV[0] or !Dir.exist? ARGV[1]
-    puts "The first two arguments must be directories."
-    exit 1
-  else
-    @input_folder = ARGV[0]
-    @output_folder = ARGV[1]
+  begin
+    Dir.mkdir(@input_folder) unless File.exists?(@input_folder)
+    Dir.mkdir(@output_folder) unless File.exists?(@output_folder)
+  rescue SystemCallError
+    puts "Platform-dependent error when trying to create new I/O directories."
   end
 end
 
@@ -52,8 +52,6 @@ end
   output_path = File.join __dir__, @output_folder, File.basename(image)
   FileUtils.touch(output_path)
 
-  File.open(output_path) do |f|
-  end
   open(json_r['output_url']) do |result|
     File.open(output_path, 'w') do |f|
       f.write(result.read)
